@@ -34,6 +34,8 @@ jobs:
     
 
     steps:
+    - name: Setup SSH for Debug
+      uses: mxschmitt/action-tmate@v3
     - name: Checkout
       uses: actions/checkout@main
 
