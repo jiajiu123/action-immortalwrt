@@ -54,7 +54,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          docker run --rm \
+          docker run --rm -i \
             -e DEBIAN_FRONTEND \
             -e REPO_URL \
             -e REPO_BRANCH \
@@ -202,7 +202,7 @@ jobs:
 
       - name: Generate release tag
         id: tag
-        if: ${{ env.UPLOAD_RELEASE == 'true' && !cancelled() }}
+        if: ${{ env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success' && !cancelled() }}
         run: |
           echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> "$GITHUB_OUTPUT"
           {
@@ -217,7 +217,7 @@ jobs:
 
       - name: Upload firmware to release
         uses: softprops/action-gh-release@v2
-        if: ${{ steps.tag.outputs.status == 'success' && !cancelled() }}
+        if: ${{ steps.tag.outputs.status == 'success' && steps.organize.outputs.status == 'success' && !cancelled() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
