@@ -58,15 +58,6 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        
-    - name: Cache OpenWrt Build (x86)
-      uses: stupidloud/cachewrtbuild@main
-      with:
-        ccache: true
-        toolchain: true
-        skip: true
-        prefix: 'openwrt'
-        mixkey: 'x86_64'
 
     - name: Load custom feeds
       run: |
