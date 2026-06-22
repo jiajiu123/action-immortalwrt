@@ -49,13 +49,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build firmware in Debian 11
-        id: compile
-        env:
-          DEBIAN_FRONTEND: noninteractive
+      - name: Start Debian 11 container
         run: |
-          docker run --rm -i \
-            -e DEBIAN_FRONTEND \
+          docker rm -f immortalwrt-build >/dev/null 2>&1 || true
+          docker run --detach --name immortalwrt-build \
+            -e DEBIAN_FRONTEND=noninteractive \
             -e REPO_URL \
             -e REPO_BRANCH \
             -e FEEDS_CONF \
@@ -69,7 +67,11 @@ jobs:
             -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
             -v /workdir:/workdir \
             -w "$GITHUB_WORKSPACE" \
-            debian:11 bash -s <<'DEBIAN'
+            debian:11 sleep infinity
+
+      - name: Prepare Debian 11 environment
+        run: |
+          docker exec -i immortalwrt-build bash -s <<'DEBIAN'
           set -e
 
           apt-get -qq update
@@ -124,7 +126,25 @@ jobs:
           cd /workdir
           git clone --single-branch --branch "$REPO_BRANCH" "$REPO_URL" openwrt
           ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
+          BUILDER
+          DEBIAN
 
+      - name: Cache OpenWrt Build
+        uses: stupidloud/cachewrtbuild@main
+        with:
+          ccache: true
+          toolchain: true
+          skip: true
+          prefix: openwrt
+          mixkey: x86_64
+
+      - name: Build firmware in Debian 11
+        id: compile
+        run: |
+          docker exec -i immortalwrt-build bash -s <<'DEBIAN'
+          set -e
+
+          as-builder <<'BUILDER'
           cd "$GITHUB_WORKSPACE"
           if [ -f "$FEEDS_CONF" ]; then
             mv "$FEEDS_CONF" openwrt/feeds.conf.default
@@ -170,6 +190,11 @@ jobs:
           echo "status=success" >> "$GITHUB_OUTPUT"
           [ -s openwrt/DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat openwrt/DEVICE_NAME)" >> "$GITHUB_ENV"
           echo "FILE_DATE=_$(cat openwrt/FILE_DATE)" >> "$GITHUB_ENV"
+
+      - name: Stop Debian 11 container
+        if: ${{ always() }}
+        run: |
+          docker rm -f immortalwrt-build >/dev/null 2>&1 || true
 
       - name: Check space usage
         if: ${{ !cancelled() }}
