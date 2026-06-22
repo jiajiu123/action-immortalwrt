@@ -57,15 +57,6 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        
-    - name: Cache OpenWrt Build (x86)
-      uses: stupidloud/cachewrtbuild@main
-      with:
-        ccache: true
-        toolchain: true
-        skip: true
-        prefix: 'openwrt'
-        mixkey: 'x86_64'
 
     - name: Load custom feeds
       run: |
@@ -102,7 +93,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j1 V=s
+        make package/feeds/packages/gn/compile V=s -j1
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
