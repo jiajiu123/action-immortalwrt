@@ -1,5 +1,5 @@
 #
-# Build ImmortalWrt on Debian 11 while keeping host-side disk cleanup.
+# Build ImmortalWrt on Debian 12 while keeping host-side disk cleanup.
 #
 
 name: OpenWrt Builder
@@ -30,7 +30,7 @@ env:
 
 jobs:
   build:
-    name: Build on Debian 11
+    name: Build on Debian 12
     runs-on: ubuntu-22.04
 
     defaults:
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start Debian 11 container
+      - name: Start Debian 12 container
         run: |
           docker rm -f immortalwrt-build >/dev/null 2>&1 || true
           docker run --detach --name immortalwrt-build \
@@ -67,9 +67,9 @@ jobs:
             -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
             -v /workdir:/workdir \
             -w "$GITHUB_WORKSPACE" \
-            debian:11 sleep infinity
+            debian:12 sleep infinity
 
-      - name: Prepare Debian 11 environment
+      - name: Prepare Debian 12 environment
         run: |
           docker exec -i immortalwrt-build bash -s <<'DEBIAN'
           set -e
@@ -138,7 +138,7 @@ jobs:
           prefix: openwrt
           mixkey: x86_64
 
-      - name: Build firmware in Debian 11
+      - name: Build firmware in Debian 12
         id: compile
         run: |
           docker exec -i immortalwrt-build bash -s <<'DEBIAN'
@@ -191,7 +191,7 @@ jobs:
           [ -s openwrt/DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat openwrt/DEVICE_NAME)" >> "$GITHUB_ENV"
           echo "FILE_DATE=_$(cat openwrt/FILE_DATE)" >> "$GITHUB_ENV"
 
-      - name: Stop Debian 11 container
+      - name: Stop Debian 12 container
         if: ${{ always() }}
         run: |
           docker rm -f immortalwrt-build >/dev/null 2>&1 || true
