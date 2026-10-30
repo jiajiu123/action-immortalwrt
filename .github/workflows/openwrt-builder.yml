@@ -79,7 +79,7 @@ jobs:
             ack antlr3 asciidoc autoconf automake autopoint \
             bash binutils bison build-essential bzip2 ca-certificates ccache \
             clang cmake cpio curl device-tree-compiler ecj fastjar file flex \
-            gawk gcc gcc-10 g++ g++-10 g++-multilib gcc-multilib \
+            gawk gcc g++ g++-multilib gcc-multilib \
             genisoimage gettext git gperf haveged help2man intltool \
             lib32gcc-s1 libc6-dev-i386 libelf-dev libglib2.0-dev \
             libgmp3-dev libgnutls28-dev libltdl-dev libmpc-dev \
@@ -93,8 +93,6 @@ jobs:
           apt-get -qq clean
           rm -rf /var/lib/apt/lists/*
 
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
           ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime
           echo "$TZ" > /etc/timezone
 
